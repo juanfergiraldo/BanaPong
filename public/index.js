@@ -1,5 +1,5 @@
 class VecPos  {
-  constructor(x = 0, y = 0){
+  constructor(x, y){
     this.x = x;
     this.y = y;
   }
@@ -7,88 +7,145 @@ class VecPos  {
 
 class Bar{
   constructor(w, h){
-    this.pos = new VecPos;
+    this.pos = new VecPos (0, 0);
     this.size = new VecPos(w, h);
   }
+  get left(){
+        return this.pos.x - this.size.x / 2;
+    }
+    get right(){
+        return this.pos.x + this.size.x / 2;
+    }
+    get top(){
+        return this.pos.y - this.size.y / 2;
+    }
+    get bottom(){
+        return this.pos.y + this.size.y / 2;
+    }
 }
 
 class Ball {
   constructor(r) {
     this.r = r;
-    this.pos = new VecPos;
-    this.speed = new VecPos;
+    this.pos = new VecPos(0, 0);
+    this.speed = new VecPos(0, 0);
   }
 }
 
-class Player {
+class Player extends Bar{
+
   constructor() {
+    super(20, 150)
     this.score = 0;
-
-  }
-}
-var counter = 0;
-var time = 20;
-var canvas = document.getElementById('pong');
-var contex = canvas.getContext('2d');
-const rad = 10;
-
-function setBackground() {
-  contex.beginPath();
-  contex.fillStyle = 'pink';
-  contex.fillRect(0, 0, canvas.width, canvas.height);
-}
-function setBall() {
-  contex.arc(ball.pos.x, ball.pos.y, ball.r, 0, 2*Math.PI);
-  contex.fillStyle = 'yellow';
-  contex.fill();
-  contex.stroke();
-}
-function setLeftBar() {
-  contex.fillStyle = 'white';
-  contex.fillRect(leftBar.pos.x, leftBar.pos.y, leftBar.size.x, leftBar.size.y);
-}
-function setRightBar() {
-  contex.fillStyle = 'white';
-  contex.fillRect(rightBar.pos.x, rightBar.pos.y, rightBar.size.x, rightBar.size.y);
-}
-const ball = new Ball(rad);
-ball.pos.x = 100;
-ball.pos.y = 100;
-ball.speed.x = 100;
-ball.speed.y = 100;
-
-const leftBar = new Bar(10, 50);
-leftBar.pos.x = 10;
-leftBar.pos.y = 10;
-const rightBar = new Bar(10, 50);
-rightBar.pos.x = canvas.width - 20;
-rightBar.pos.y = canvas.height - 60;
-
-//Calculate time to draw with request animation frame
-let lasTime;
-function callback(millisec) {
-  if (lasTime) {
-    update((millisec - lasTime)/1000); //convert to seconds
-  }
-  lasTime = millisec;
-  requestAnimationFrame(callback);
-}
-function update(dt) {
-  ball.pos.x += ball.speed.x * dt;
-  ball.pos.y += ball.speed.y * dt;
-
-  if((ball.pos.x + rad) > canvas.width ||
-          (ball.pos.x - rad) < 0){
-    ball.speed.x = - ball.speed.x;
+    this.speed = new VecPos(0, 0);
   }
 
-  if((ball.pos.y + rad) > canvas.height ||
-          (ball.pos.y - rad) < 0){
-    ball.speed.y = - ball.speed.y;
-  }
-  setBackground();
-  setBall();
-  setLeftBar();
-  setRightBar();
 }
-callback();
+
+class Pong{
+
+  constructor(canvas){
+    this.canvas = canvas;
+    this.contex = this.canvas.getContext('2d');
+    this.counter = 0;
+    this.time = 20;
+    this.rad = 10;
+    this.ball = new Ball(this.rad);
+    this.players = [new Player, new Player];
+
+    this.players[0].pos.x = 40;
+    this.players[1].pos.x = canvas.width - 40;
+    this.players.forEach(player => {
+      player.pos.y = this.canvas.height / 2;
+    })
+    //Calculates time to draw with request animation frame
+    let lasTime = null;
+    this.framecallback = (millisec) => {
+      if (lasTime !== null) {
+        this.update((millisec - lasTime)/1000); //converts to seconds
+      }
+      lasTime = millisec;
+      requestAnimationFrame(this.framecallback);
+
+  }
+  this.ball.pos.x = 100;
+  this.ball.pos.y = 100;
+  this.ball.speed.x = 100;
+  this.ball.speed.y = 100;
+
+
+  }
+  update(dt) {
+
+    this.ball.pos.x += this.ball.speed.x * dt;
+    this.ball.pos.y += this.ball.speed.y * dt;
+
+    if((this.ball.pos.x + this.rad) > canvas.width ||
+            (this.ball.pos.x - this.rad) < 0){
+      this.ball.speed.x = - this.ball.speed.x;
+    }
+
+    if((this.ball.pos.y + this.rad) > canvas.height ||
+            (this.ball.pos.y - this.rad) < 0){
+      this.ball.speed.y = - this.ball.speed.y;
+    }
+
+    //this.players[0].pos.y =  this.ball.pos.y;
+    this.setBackground();
+    this.setBall();
+    this.setPlayers();
+    this.follow();
+  }
+//Terminar
+  /*follow(){
+    //this.players[0].pos.y =  this.ball.pos.y;
+    if (this.ball.pos.y < this.canvas.height / 2){
+      this.players[0].pos.y = this.ball.pos.y + this.players[0].size.y/2;
+    }
+    if (this.ball.pos.y > this.canvas.height / 2){
+      this.players[0].pos.y = this.ball.pos.y - this.players[0].size.y/2 ;
+    }
+  }*/
+
+  follow(){
+    this.players[0].pos.y =  this.ball.pos.y;
+    //console.log(this.ball.pos.y - this.players[0].size.y);
+    var lastPos = this.ball.pos.y;
+    if ((this.ball.pos.y - this.players[0].size.y/2) < 0) {
+      this.players[0].pos.y = this.players[0].size.y/2;
+    }
+    if ((this.ball.pos.y + this.players[0].size.y/2) > this.canvas.height) {
+      this.players[0].pos.y = this.canvas.height - this.players[0].size.y/2;
+    }
+
+  }
+
+  setBackground() {
+    this.contex.beginPath();
+    this.contex.fillStyle = 'pink';
+    this.contex.fillRect(0, 0, this.canvas.width, this.canvas.height);
+  }
+  setBall() {
+    this.contex.arc(this.ball.pos.x, this.ball.pos.y, this.ball.r, 0, 2*Math.PI);
+    this.contex.fillStyle = 'yellow';
+    this.contex.fill();
+    this.contex.stroke();
+  }
+  setBar(bar) {
+    this.contex.fillStyle = 'white';
+    this.contex.fillRect(bar.left, bar.top, bar.size.x, bar.size.y);
+    this.contex.stroke();
+  }
+
+  setPlayers(){
+    this.players.forEach(player => this.setBar(player));
+  }
+
+  start(){
+    requestAnimationFrame(this.framecallback);
+  }
+
+}
+const canvas = document.getElementById('pong');
+const pong = new Pong(canvas);
+pong.start();
