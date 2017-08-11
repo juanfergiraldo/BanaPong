@@ -95,6 +95,7 @@ class Pong{
     this.setBall();
     this.setPlayers();
     this.follow();
+    this.move();
   }
 //Terminar
   /*follow(){
@@ -144,8 +145,25 @@ class Pong{
   start(){
     requestAnimationFrame(this.framecallback);
   }
+  move(){
+      document.addEventListener("keydown", evt => {
+    
+    if(evt.keyCode == 38 || evt.keyCode == 87){ //Up
+      console.log("Up");
+      this.players[1].pos.y = this.players[1].pos.y + 10;
+    }
+
+    if(evt.keyCode == 40 || evt.keyCode == 83){ //Down
+      console.log("Down");
+      this.players[1].pos.y = this.players[1].pos.y - 10;
+    }
+  });
+  }
+  
+
 
 }
 const canvas = document.getElementById('pong');
 const pong = new Pong(canvas);
+
 pong.start();
