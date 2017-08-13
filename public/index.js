@@ -95,30 +95,7 @@ class Pong{
     this.setBall();
     this.setPlayers();
     this.follow();
-    this.move();
-  }
-//Terminar
-  /*follow(){
-    //this.players[0].pos.y =  this.ball.pos.y;
-    if (this.ball.pos.y < this.canvas.height / 2){
-      this.players[0].pos.y = this.ball.pos.y + this.players[0].size.y/2;
-    }
-    if (this.ball.pos.y > this.canvas.height / 2){
-      this.players[0].pos.y = this.ball.pos.y - this.players[0].size.y/2 ;
-    }
-  }*/
-
-  follow(){
-    this.players[0].pos.y =  this.ball.pos.y;
-    //console.log(this.ball.pos.y - this.players[0].size.y);
-    var lastPos = this.ball.pos.y;
-    if ((this.ball.pos.y - this.players[0].size.y/2) < 0) {
-      this.players[0].pos.y = this.players[0].size.y/2;
-    }
-    if ((this.ball.pos.y + this.players[0].size.y/2) > this.canvas.height) {
-      this.players[0].pos.y = this.canvas.height - this.players[0].size.y/2;
-    }
-
+    this.collision();
   }
 
   setBackground() {
@@ -145,25 +122,56 @@ class Pong{
   start(){
     requestAnimationFrame(this.framecallback);
   }
-  move(){
-      document.addEventListener("keydown", evt => {
-    
-    if(evt.keyCode == 38 || evt.keyCode == 87){ //Up
-      console.log("Up");
-      this.players[1].pos.y = this.players[1].pos.y + 10;
+
+  follow(){
+    this.players[0].pos.y =  this.ball.pos.y;
+    var lastPos = this.ball.pos.y;
+    if ((this.ball.pos.y - this.players[0].size.y/2) < 0) {
+      this.players[0].pos.y = this.players[0].size.y/2;
     }
 
-    if(evt.keyCode == 40 || evt.keyCode == 83){ //Down
-      console.log("Down");
-      this.players[1].pos.y = this.players[1].pos.y - 10;
+    if ((this.ball.pos.y + this.players[0].size.y/2) > this.canvas.height) {
+      this.players[0].pos.y = this.canvas.height - this.players[0].size.y/2;
     }
-  });
+
   }
-  
 
+  move(){
+    document.addEventListener("keydown", evt => {
+
+      if(evt.keyCode == 38 || evt.keyCode == 87){ //Up
+        this.players[1].pos.y = this.players[1].pos.y - 20;
+        if(this.players[1].pos.y == 75){
+        }
+        if((this.players[1].pos.y - this.players[1].size.y/2) < 0){
+          this.players[1].pos.y = this.players[1].size.y/2;
+        }
+      }
+
+      if(evt.keyCode == 40 || evt.keyCode == 83){ //Down
+        this.players[1].pos.y = this.players[1].pos.y + 20;
+        if((this.players[1].pos.y + this.players[1].size.y/2) > this.canvas.height){
+          this.players[1].pos.y = this.canvas.height - this.players[1].size.y/2;
+        }
+      }
+    });
+  }
+
+  collision(){
+    if((Math.abs(this.players[0].pos.y - this.ball.pos.y) < this.players[0].size.y/2) &&
+          (this.ball.pos.x + this.rad) == (this.players[0].pos.x + this.players[0].size.x/2)){
+            console.log("holi3");
+            this.ball.speed = -this.ball.speed;
+          }
+          //console.log((this.ball.pos.x + this.rad) + ", " + (this.players[0].pos.x + this.players[0].size.x/2));
+          if(this.ball.pos.x + this.rad < 52  && this.ball.pos.x + this.rad > 51){
+            this.ball.speed.x = -this.ball.speed.x;
+          }
+  }
 
 }
 const canvas = document.getElementById('pong');
 const pong = new Pong(canvas);
 
 pong.start();
+pong.move();
