@@ -48,9 +48,14 @@ class Pong{
     this.canvas = canvas;
     this.contex = this.canvas.getContext('2d');
     this.counter = 0;
+    this.ban = true;
     this.time = 20;
     this.rad = 10;
     this.ball = new Ball(this.rad);
+    this.ball.pos.x = 100;
+    this.ball.pos.y = 100;
+    this.ball.speed.x = 100;
+    this.ball.speed.y = 100;
     this.players = [new Player, new Player];
 
     this.players[0].pos.x = 40;
@@ -66,14 +71,8 @@ class Pong{
       }
       lasTime = millisec;
       requestAnimationFrame(this.framecallback);
-
-  }
-  this.ball.pos.x = 100;
-  this.ball.pos.y = 100;
-  this.ball.speed.x = 100;
-  this.ball.speed.y = 100;
-
-
+    }
+    this.pause();
   }
   update(dt) {
 
@@ -82,7 +81,11 @@ class Pong{
 
     if((this.ball.pos.x + this.rad) > canvas.width ||
             (this.ball.pos.x - this.rad) < 0){
-      this.ball.speed.x = - this.ball.speed.x;
+      const playerId = this.ball.speed.x < 0 | 0;
+      this.players[playerId].score++;
+      console.log(playerId);
+      this.reset();
+
     }
 
     if((this.ball.pos.y + this.rad) > canvas.height ||
@@ -97,6 +100,7 @@ class Pong{
     this.follow();
     this.collision();
   }
+
 
   setBackground() {
     this.contex.beginPath();
@@ -122,7 +126,29 @@ class Pong{
   start(){
     requestAnimationFrame(this.framecallback);
   }
+  pause(){
+    document.addEventListener("keydown", evt =>{
+      if(evt.keyCode == 80 || evt.keyCode == 32 && this.ban == true){
+        this.ball.speed.x = 0;
+        this.ball.speed.y = 0;
+        console.log(this.ban);
+        this.ban = false;
+        console.log(this.ban);
+      }
+      if(evt.keyCode == 80 || evt.keyCode == 32 && this.ban == false){
+        this.ball.speed.x = 0;
+        this.ball.speed.y = 0;
+        this.ban = true;
+      }
 
+    })
+  }
+  reset(){
+    this.ball.pos.x = Math.floor((Math.random() * 300)+ 100);
+    this.ball.pos.y = Math.floor((Math.random() * 390)+ 10);;
+    this.ball.speed.x = 100;
+    this.ball.speed.y = 100;
+  }
   follow(){
     this.players[0].pos.y =  this.ball.pos.y;
     var lastPos = this.ball.pos.y;
@@ -138,7 +164,6 @@ class Pong{
 
   move(){
     document.addEventListener("keydown", evt => {
-
       if(evt.keyCode == 38 || evt.keyCode == 87){ //Up
         this.players[1].pos.y = this.players[1].pos.y - 20;
         if(this.players[1].pos.y == 75){
@@ -147,7 +172,6 @@ class Pong{
           this.players[1].pos.y = this.players[1].size.y/2;
         }
       }
-
       if(evt.keyCode == 40 || evt.keyCode == 83){ //Down
         this.players[1].pos.y = this.players[1].pos.y + 20;
         if((this.players[1].pos.y + this.players[1].size.y/2) > this.canvas.height){
@@ -158,14 +182,13 @@ class Pong{
   }
 
   collision(){
-    if((Math.abs(this.players[0].pos.y - this.ball.pos.y) < this.players[0].size.y/2) &&
-          (this.ball.pos.x + this.rad) == (this.players[0].pos.x + this.players[0].size.x/2)){
-            console.log("holi3");
-            this.ball.speed = -this.ball.speed;
-          }
-          //console.log((this.ball.pos.x + this.rad) + ", " + (this.players[0].pos.x + this.players[0].size.x/2));
-          if(this.ball.pos.x + this.rad < 52  && this.ball.pos.x + this.rad > 51){
+          if(this.ball.pos.x - this.rad > 51 && this.ball.pos.x - this.rad < 52){
             this.ball.speed.x = -this.ball.speed.x;
+          }
+          if(this.ball.pos.y > (this.players[1].pos.y - this.players[1].size.y/2) &&
+              this.ball.pos.y < (this.players[1].pos.y + this.players[1].size.y/2) &&
+              (this.ball.pos.x < 546) && this.ball.pos.x > 545){
+                    this.ball.speed.x = -this.ball.speed.x;
           }
   }
 
@@ -175,3 +198,4 @@ const pong = new Pong(canvas);
 
 pong.start();
 pong.move();
+//pong.pause();
